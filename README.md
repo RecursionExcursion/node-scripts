@@ -15,7 +15,7 @@ This repository contains a collection of Node.js scripts designed to automate co
    ```bash
    node <script-name>.js
 
-Replace <script-name> with the name of the script file you want to run.
+Replace <script-name> with the path to the script file you want to run.
 
 ## Included Scripts
 
