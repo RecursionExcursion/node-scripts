@@ -19,6 +19,8 @@ Replace <script-name> with the path to the script file you want to run.
 
 ## Included Scripts
 
+## 1. Initializers
+
 1. TypeScript-Express Project Setup
 
 Automates the setup of a TypeScript-based Express.js project. This script:
