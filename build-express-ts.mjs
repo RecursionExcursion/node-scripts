@@ -42,16 +42,17 @@ const executors = {
 
 const PORT = 8080;
 
-const dependencies = ["express", "dotenv"];
+const dependencies = ["express", "dotenv", "compression"];
 
 const devDependencies = [
   "typescript",
   "ts-node",
-  "@types/express",
   "nodemon",
   "eslint",
   "@eslint/js",
   "typescript-eslint",
+  "@types/express",
+  "@types/compression",
 ];
 
 const scripts = new Map([
@@ -197,6 +198,7 @@ executors.writeFile(
   "./src/index.ts",
   ` import express, { Application, Request, Response, NextFunction } from 'express';
     import dotenv from 'dotenv';
+    import compression from "compression";
 
     dotenv.config();
     
@@ -204,6 +206,9 @@ executors.writeFile(
     const app: Application = express();
     const PORT = process.env.PORT;
     app.use(express.json());
+    
+    //Gzip
+    app.use(compression());
     
     // Application routing
     app.use('/', (req: Request, res: Response, next: NextFunction ) => {
