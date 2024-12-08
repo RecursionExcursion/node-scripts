@@ -53,6 +53,7 @@ const devDependencies = [
   "typescript-eslint",
   "@types/express",
   "@types/compression",
+  "@types/node",
 ];
 
 const scripts = new Map([
