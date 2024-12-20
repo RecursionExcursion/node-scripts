@@ -1,29 +1,33 @@
 import { execSync } from "child_process";
 import fs from "fs";
 
-const isNonEmptyString = (/** @type {string} */ value) => {
+/** @param {string} value  */
+const isNonEmptyString = (value) => {
   return typeof value === "string" && value !== "";
 };
 
 const executors = {
-  terminal: (/** @type {string} */ command) => {
+  /** @param {string} command  */
+  terminal: (command) => {
     if (!isNonEmptyString(command)) {
       throw new Error("Invalid command");
     }
     execSync(command, { stdio: "inherit" });
   },
 
-  createDir: (/** @type {string} */ dirPath) => {
+  /** @param {string} dirPath  */
+  createDir: (dirPath) => {
     if (!isNonEmptyString(dirPath)) {
       throw new Error("Invalid directory name");
     }
     fs.mkdirSync(dirPath);
   },
 
-  writeFile: (
-    /** @type {string} */ filePath,
-    /** @type {string} */ content
-  ) => {
+  /**
+   * @param {string} filePath
+   * @param {string} content
+   */
+  writeFile: (filePath, content) => {
     if (!isNonEmptyString(filePath) || !isNonEmptyString(content)) {
       throw new Error("Invalid file path or content");
     }
@@ -42,181 +46,178 @@ const executors = {
 
 const PORT = 8080;
 
-const dependencies = ["express", "dotenv", "compression"];
+function initializeNode() {
+  executors.terminal("npm init -y");
+}
 
-const devDependencies = [
-  "typescript",
-  "ts-node",
-  "nodemon",
-  "eslint",
-  "@eslint/js",
-  "typescript-eslint",
-  "@types/express",
-  "@types/compression",
-  "@types/node",
-];
+function installDependencies() {
+  const dependencies = ["express", "dotenv", "compression"];
 
-const scripts = new Map([
-  ["start", "nodemon"],
-  ["build", "tsc"],
-]);
-
-executors.terminal("npm init -y");
-
-executors.terminal(`npm i -S ${dependencies.join(" ")}`);
-executors.terminal(`npm i -D ${devDependencies.join(" ")}`);
-
-executors.terminal("npx tsc --init");
-executors.terminal("npm init @eslint/config");
-
-executors.writeFile(".env", `PORT=${PORT}`);
-
-executors.writeFile(
-  "./tsconfig.json",
-  `{
-        "compilerOptions": {
-            "target": "es5",
-            "module": "commonjs",
-            "sourceMap": true,
-            "outDir": "./build",
-            "rootDir": "./src",
-            /* Strict Type-Checking Options */
-            "strict": true,
-            "noImplicitAny": true,
-            /* Module Resolution Options */
-            "moduleResolution": "node",
-            "baseUrl": "./src",
-            "esModuleInterop": true,
-            /* Advanced Options */
-            "skipLibCheck": true,
-            "forceConsistentCasingInFileNames": true
-        },
-        "lib": ["es2015"],
-        "include": ["src/**/*"],
-        "exclude": ["node_modules"]
-    }`
-);
-
-executors.writeFile(
-  "nodemon.json",
-  `{
-        "watch": ["src"],
-        "ext": ".ts",
-        "ignore": [],
-        "exec": "ts-node ./src/index.ts"
-    }`
-);
-
-executors.writeFile(
-  ".eslintignore",
-  `node_modules
-build`
-);
-
-executors.writeFile(
-  ".gitignore",
-  `# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-.yarn/install-state.gz
-  
-# testing
-/coverage
-  
-# next.js
-/.next/
-/out/
-  
-# production
-/build
-  
-# misc
-.DS_Store
-*.pem
-  
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-  
-# local env files
-.env*.local
-  
-# vercel
-.vercel
-  
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-  
-.env
-./build`
-);
-
-const addScripts = (/** @type {Map} */ scriptsMap) => {
-  const propertyOrder = [
-    "name",
-    "version",
-    "description",
-    "author",
-    "license",
-    "keywords",
-    "main",
-    "scripts",
-    "dependencies",
-    "devDependencies",
+  const devDependencies = [
+    "typescript",
+    "nodemon",
+    "@types/express",
+    "@types/compression",
+    "@types/node",
   ];
 
-  const packageJsonPath = "./package.json";
+  executors.terminal(`npm i -S ${dependencies.join(" ")}`);
+  executors.terminal(`npm i -D ${devDependencies.join(" ")}`);
+}
 
-  const packageJson = JSON.parse(executors.readFile(packageJsonPath));
-
-  scriptsMap.forEach((v, k) => {
-    packageJson.scripts[k] = v;
-  });
-
-  const orderedPackageJson = {};
-
-  propertyOrder.forEach((property) => {
-    if (packageJson.hasOwnProperty(property)) {
-      orderedPackageJson[property] = packageJson[property];
-    }
-  });
-
-  // Write the modified package.json back to file
+function initializeTS() {
+  executors.terminal("tsc --init");
   executors.writeFile(
-    packageJsonPath,
-    JSON.stringify(orderedPackageJson, null, 2)
+    "./tsconfig.json",
+    [
+      `{`,
+      `"compilerOptions": {`,
+      `"target": "es5",`,
+      `"module": "commonjs",`,
+      `"sourceMap": true,`,
+      `"outDir": "./dist",`,
+      `"rootDir": "./src",`,
+      `/* Strict Type-Checking Options */`,
+      `"strict": true,`,
+      `"noImplicitAny": true,`,
+      `/* Module Resolution Options */`,
+      `"moduleResolution": "node",`,
+      `"baseUrl": "./src",`,
+      `"esModuleInterop": true,`,
+      `/* Advanced Options */`,
+      `"skipLibCheck": true,`,
+      `"forceConsistentCasingInFileNames": true`,
+      `},`,
+      `"lib": ["es2015"],`,
+      `"include": ["src/**/*"],`,
+      `"exclude": ["node_modules"]`,
+      `}`,
+    ].join("\n")
   );
-};
-addScripts(scripts);
+}
 
-executors.createDir("./src");
-executors.writeFile(
-  "./src/index.ts",
-  ` import express, { Application, Request, Response, NextFunction } from 'express';
-    import dotenv from 'dotenv';
-    import compression from "compression";
+function createMiscFiles() {
+  executors.writeFile(".env", `PORT=${PORT}`);
+  executors.writeFile(
+    ".gitignore",
+    [
+      "# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.",
+      "\n",
+      "# dependencies",
+      "/node_modules",
+      "\n",
+      "# production",
+      "/dist",
+      "\n",
+      "# debug",
+      "npm-debug.log*",
+      "yarn-debug.log*",
+      "yarn-error.log*",
+      "\n",
+      "# typescript",
+      "*.tsbuildinfo",
+      "\n",
+      "# enviroment",
+      ".env",
+    ].join("\n")
+  );
+}
 
-    dotenv.config();
-    
-    // Boot express
-    const app: Application = express();
-    const PORT = process.env.PORT;
-    app.use(express.json());
-    
-    //Gzip
-    app.use(compression());
-    
-    // Application routing
-    app.use('/', (req: Request, res: Response, next: NextFunction ) => {
-        res.status(200).send({data: 'Hello World!'});
+function initNodemon() {
+  executors.writeFile(
+    "nodemon.json",
+    [
+      `{`,
+      '"watch": ["src"],',
+      '"ext": "ts",',
+      '"exec": "tsc && node dist/index.js",',
+      '"ignore": ["dist"],',
+      '"restartable": "rs"',
+      `}`,
+    ].join("\n")
+  );
+}
+
+function initalizeScripts() {
+  /** @type {Map<string, string>} */
+  const scripts = new Map([
+    ["start", "node dist/index.js"],
+    ["build", "tsc"],
+    ["dev", "nodemon"],
+  ]);
+  /** @param {Map<string,string>} scriptsMap  */
+  ((scriptsMap) => {
+    const propertyOrder = [
+      "name",
+      "version",
+      "description",
+      "author",
+      "license",
+      "keywords",
+      "main",
+      "scripts",
+      "dependencies",
+      "devDependencies",
+    ];
+
+    const packageJsonPath = "./package.json";
+
+    const packageJson = JSON.parse(executors.readFile(packageJsonPath));
+
+    scriptsMap.forEach((v, k) => {
+      packageJson.scripts[k] = v;
     });
-    
-    // Start server
-    app.listen(PORT, () => console.log(\`Server is listening on PORT: \${PORT}!\`));
-     `
-);
+
+    const orderedPackageJson = {};
+
+    propertyOrder.forEach((property) => {
+      if (packageJson.hasOwnProperty(property)) {
+        orderedPackageJson[property] = packageJson[property];
+      }
+    });
+
+    // Write the modified package.json back to file
+    executors.writeFile(
+      packageJsonPath,
+      JSON.stringify(orderedPackageJson, null, 2)
+    );
+  })(scripts);
+}
+
+function createAppDir() {
+  executors.createDir("./src");
+  executors.writeFile(
+    "./src/index.ts",
+    [
+      `import express, { Application, Request, Response, NextFunction } from 'express';`,
+      `import dotenv from 'dotenv';`,
+      `import compression from "compression";`,
+      `\n`,
+      `dotenv.config();`,
+      `\n`,
+      `// Boot express`,
+      `const app: Application = express();`,
+      `const PORT = process.env.PORT;`,
+      `app.use(express.json());`,
+      `\n`,
+      `//Gzip`,
+      `app.use(compression());`,
+      `\n`,
+      ` // Application routing`,
+      `app.use('/', (req: Request, res: Response, next: NextFunction ) => {`,
+      `res.status(200).send({data: 'Hello World!'});`,
+      ` });`,
+      `\n`,
+      `// Start server`,
+      ` app.listen(PORT, () => console.log(\`Server is listening on PORT: \${PORT}!\`));`,
+    ].join("\n")
+  );
+}
+
+initializeNode();
+installDependencies();
+initializeTS();
+createMiscFiles();
+initalizeScripts();
+initNodemon();
+createAppDir();
