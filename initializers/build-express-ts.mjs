@@ -88,7 +88,6 @@ function initializeTS() {
       `"skipLibCheck": true,`,
       `"forceConsistentCasingInFileNames": true`,
       `},`,
-      `"lib": ["es2015"],`,
       `"include": ["src/**/*"],`,
       `"exclude": ["node_modules"]`,
       `}`,
