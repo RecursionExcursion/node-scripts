@@ -1,0 +1,17 @@
+{
+  "name": "scripts",
+  "version": "1.0.0",
+  "description": "This repository contains a collection of Node.js scripts designed to automate common development tasks. These scripts simplify project setup, configuration, and other repetitive tasks, allowing you to focus on coding.",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "main": "index.js",
+  "scripts": {
+    "create-test-dir": "rimraf test && mkdir test",
+    "build-express": "npm run create-test-dir && cd test && node ../initializers/express-ts/build-express-ts.mjs",
+    "build-express-22": "npm run create-test-dir && cd test && node ../initializers/express-ts/build-express-ts-node-22.mjs"
+  },
+  "devDependencies": {
+    "rimraf": "^6.0.1"
+  }
+}

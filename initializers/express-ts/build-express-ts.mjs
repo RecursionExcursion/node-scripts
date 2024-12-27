@@ -72,7 +72,7 @@ function initializeTS() {
     [
       `{`,
       `"compilerOptions": {`,
-      `"target": "es5",`,
+      `"target": "es6",`,
       `"module": "commonjs",`,
       `"sourceMap": true,`,
       `"outDir": "./dist",`,
